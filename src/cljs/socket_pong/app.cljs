@@ -6,7 +6,7 @@
 (def ^:private PADDLE_HEIGHT 40)
 (def ^:private PADDLE_OFFSET 5)
 
-(def ^:private BALL_SIZE 5)
+(def ^:private BALL_SIZE 10)
 
 (defn setup
   "Setup for Quil"
@@ -20,29 +20,36 @@
 
 (defn draw-paddle
   "Draw paddle"
-  [position]
+  [state]
   (q/fill 255)
   (q/rect PADDLE_OFFSET
-          position
+          (:paddle-position state)
           PADDLE_WIDTH
-          PADDLE_HEIGHT))
+          PADDLE_HEIGHT)
+  state)
 
 (defn draw-ball
   "Draw ball."
-  [{:keys [x dx y dy]}]
-  (q/fill 240)
-  (q/rect x y
-          BALL_SIZE BALL_SIZE))
+  [state]
+  (let [ball (:ball state)
+        {:keys [x dx y dy]} ball]
+    (q/fill 240)
+    (q/rect x y
+            BALL_SIZE BALL_SIZE)
+    state))
 
 (defn set-ball-position!
   "Determine the position of the ball."
-  [state])
+  [state]
+  state)
 
 (defn draw-state
   "Draws the current state of the application"
   [state]
-  (draw-paddle (:paddle-position state))
-  (set-ball-position! state))
+  (-> state
+      (draw-paddle)
+      (set-ball-position!)
+      (draw-ball)))
 
 (defn set-paddle-position!
   "Set the paddle position based on which key was pressed."
