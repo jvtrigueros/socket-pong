@@ -11,9 +11,10 @@
   []
   (q/color-mode :hsb)
   (q/background 0)
-  
+
   {:paddle-position 0
-   :ball-position   [0 0]})
+   :ball            {:position  {:x 0 :y 0}
+                     :direction {:x 0 :y 0}}})
 
 (defn set-paddle-position!
   "Sets the position of the paddle"
@@ -24,10 +25,16 @@
           PADDLE_WIDTH
           PADDLE_HEIGHT))
 
+(defn set-ball-position!
+  "Determine the position of the ball."
+  [ball]
+  )
+
 (defn draw-state
   "Draws the current state of the application"
   [state]
-  (set-paddle-position! (:paddle-position state)))
+  (set-paddle-position! (:paddle-position state))
+  (set-ball-position! (:ball state)))
 
 (defn move
   "Set the paddle position based on which key was pressed."
