@@ -21,8 +21,8 @@
   "Set the paddle position based on which key was pressed."
   [key position]
   (case key
-    :up (- position 1)
-    :down (+ position 1)
+    :up (dec position)
+    :down (inc position)
     position))
 
 (defn key-pressed-handler
