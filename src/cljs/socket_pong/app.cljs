@@ -2,22 +2,20 @@
   (:require [quil.core :as q :include-macros true]
             [quil.middleware :as m]))
 
-(def ^:private PADDLE_WIDTH) 5
-(def ^:private PADDLE_HEIGHT 20)
+(def ^:private PADDLE_WIDTH 5)
+(def ^:private PADDLE_HEIGHT 40)
 
 (defn setup
   "Setup for Quil"
   []
   (q/color-mode :hsb)
-  {
-   :paddle-position 0})
+  {:paddle-position 0})
 
 (defn draw-state
   "Draws the current state of the application"
   [state]
   (q/background 240)
-  (q/rect 0 (:paddle-position state) PADDLE_WIDTH PADDLE_HEIGHT)
-  (q/fill (:color state) 255 255))
+  (q/rect 0 (:paddle-position state) PADDLE_WIDTH PADDLE_HEIGHT))
 
 (defn move
   "Set the paddle position based on which key was pressed."
