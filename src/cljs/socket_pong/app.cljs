@@ -46,17 +46,19 @@
 
 (defn set-paddle-position!
   "Set the paddle position based on which key was pressed."
-  [key position]
-  (case key
-    :up (dec position)
-    :down (inc position)
-    position))
+  [state key]
+  (let [old-position (:paddle-position state)
+        new-position (case key
+                       :up (dec old-position)
+                       :down (inc old-position)
+                       old-position)]
+    (update-in state [:paddle-position] (constantly new-position))))
 
 (defn key-pressed-handler
   "Determine what to do when key is pressed."
   [state event]
   (-> state
-      (update-in [:paddle-position] (partial set-paddle-position! (:key event)))))
+      (set-paddle-position! (:key event))))
 
 (q/defsketch socket-pong
              :host "socket-pong"
