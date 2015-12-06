@@ -6,15 +6,17 @@
 (def ^:private PADDLE_HEIGHT 40)
 (def ^:private PADDLE_OFFSET 5)
 
+(def ^:private BALL_SIZE 5)
+
 (defn setup
   "Setup for Quil"
   []
   (q/color-mode :hsb)
   (q/background 0)
 
-  {:paddle-position 0
-   :ball            {:position  {:x 0 :y 0}
-                     :direction {:x 0 :y 0}}})
+  {:paddle-position (/ (- 300 PADDLE_HEIGHT) 2)
+                    :ball {:x (/ 500 2), :dx 0
+                           :y (/ 300 2), :dy 0}})
 
 (defn set-paddle-position!
   "Sets the position of the paddle"
@@ -27,8 +29,9 @@
 
 (defn set-ball-position!
   "Determine the position of the ball."
-  [ball]
-  )
+  [{:keys [x dx y dy]}]
+  (q/fill 240)
+  (q/rect x y BALL_SIZE BALL_SIZE))
 
 (defn draw-state
   "Draws the current state of the application"
