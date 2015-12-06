@@ -15,11 +15,11 @@
   (q/background 0)
 
   {:paddle-position (/ (- 300 PADDLE_HEIGHT) 2)
-                    :ball {:x (/ 500 2), :dx 0
+                    :ball {:x (/ 500 2), :dx -1
                            :y (/ 300 2), :dy 0}})
 
-(defn set-paddle-position!
-  "Sets the position of the paddle"
+(defn draw-paddle
+  "Draw paddle"
   [position]
   (q/fill 255)
   (q/rect PADDLE_OFFSET
@@ -27,19 +27,24 @@
           PADDLE_WIDTH
           PADDLE_HEIGHT))
 
-(defn set-ball-position!
-  "Determine the position of the ball."
+(defn draw-ball
+  "Draw ball."
   [{:keys [x dx y dy]}]
   (q/fill 240)
-  (q/rect x y BALL_SIZE BALL_SIZE))
+  (q/rect x y
+          BALL_SIZE BALL_SIZE))
+
+(defn set-ball-position!
+  "Determine the position of the ball."
+  [state])
 
 (defn draw-state
   "Draws the current state of the application"
   [state]
-  (set-paddle-position! (:paddle-position state))
-  (set-ball-position! (:ball state)))
+  (draw-paddle (:paddle-position state))
+  (set-ball-position! state))
 
-(defn move
+(defn set-paddle-position!
   "Set the paddle position based on which key was pressed."
   [key position]
   (case key
@@ -51,7 +56,7 @@
   "Determine what to do when key is pressed."
   [state event]
   (-> state
-      (update-in [:paddle-position] (partial move (:key event)))))
+      (update-in [:paddle-position] (partial set-paddle-position! (:key event)))))
 
 (q/defsketch socket-pong
              :host "socket-pong"
