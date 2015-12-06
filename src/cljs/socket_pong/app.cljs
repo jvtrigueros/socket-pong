@@ -4,18 +4,30 @@
 
 (def ^:private PADDLE_WIDTH 5)
 (def ^:private PADDLE_HEIGHT 40)
+(def ^:private PADDLE_OFFSET 5)
 
 (defn setup
   "Setup for Quil"
   []
   (q/color-mode :hsb)
-  {:paddle-position 0})
+  (q/background 0)
+  
+  {:paddle-position 0
+   :ball-position   [0 0]})
+
+(defn set-paddle-position!
+  "Sets the position of the paddle"
+  [position]
+  (q/fill 255)
+  (q/rect PADDLE_OFFSET
+          position
+          PADDLE_WIDTH
+          PADDLE_HEIGHT))
 
 (defn draw-state
   "Draws the current state of the application"
   [state]
-  (q/background 240)
-  (q/rect 0 (:paddle-position state) PADDLE_WIDTH PADDLE_HEIGHT))
+  (set-paddle-position! (:paddle-position state)))
 
 (defn move
   "Set the paddle position based on which key was pressed."
