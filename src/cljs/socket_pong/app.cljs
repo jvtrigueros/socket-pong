@@ -13,10 +13,11 @@
   []
   (q/color-mode :hsb)
   (q/background 0)
+  (q/frame-rate 60)
 
   {:paddle-position (/ (- 300 PADDLE_HEIGHT) 2)
-                    :ball {:x (/ 500 2), :dx -1
-                           :y (/ 300 2), :dy 0}})
+   :ball            {:x (/ 500 2), :dx -1
+                     :y (/ 300 2), :dy 0}})
 
 (defn draw-paddle
   "Draw paddle"
@@ -32,7 +33,7 @@
   "Draw ball."
   [state]
   (let [ball (:ball state)
-        {:keys [x dx y dy]} ball]
+        {:keys [x y]} ball]
     (q/fill 240)
     (q/rect x y
             BALL_SIZE BALL_SIZE)
@@ -41,15 +42,23 @@
 (defn set-ball-position!
   "Determine the position of the ball."
   [state]
-  state)
+  (let [ball (:ball state)
+        {:keys [dx y dy]} ball
+        new-state (update-in state [:ball :x] + (* 10 dx))]
+    (update-in state [:ball :x] + dx)))
 
 (defn draw-state
   "Draws the current state of the application"
   [state]
   (-> state
       (draw-paddle)
-      (set-ball-position!)
       (draw-ball)))
+
+(defn update-state
+  "Updates the state of the application"
+  [state]
+  (-> state
+      (set-ball-position!)))
 
 (defn set-paddle-position!
   "Set the paddle position based on which key was pressed."
@@ -71,6 +80,7 @@
              :host "socket-pong"
              :setup setup
              :draw draw-state
+             :update update-state
              :key-pressed key-pressed-handler
              :middleware [m/fun-mode])
 
