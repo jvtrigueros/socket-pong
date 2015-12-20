@@ -8,6 +8,11 @@
 
 (def ^:private BALL_SIZE 10)
 
+(def initial-state
+  {:paddle-position (/ (- 300 PADDLE_HEIGHT) 2)
+   :ball            {:x (/ 500 2), :dx -1
+                     :y (/ 300 2), :dy -1}})
+
 (defn setup
   "Setup for Quil"
   []
@@ -15,9 +20,7 @@
   (q/background 0)
   (q/frame-rate 60)
 
-  {:paddle-position (/ (- 300 PADDLE_HEIGHT) 2)
-   :ball            {:x (/ 500 2), :dx -1
-                     :y (/ 300 2), :dy 0}})
+  initial-state)
 
 (defn draw-paddle
   "Draw paddle"
