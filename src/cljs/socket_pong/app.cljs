@@ -9,9 +9,11 @@
 (def ^:private BALL_SIZE 15)
 
 (def initial-state
-  {:paddle (/ 300 2)
-   :ball   {:x (/ 500 2), :dx -1
-                     :y (/ 300 2), :dy -1}})
+  {:paddle {:x PADDLE_OFFSET,       :dx 0
+            :y (/ 300 2),           :dy 0
+            :height PADDLE_HEIGHT,  :width PADDLE_WIDTH}
+   :ball   {:x (/ 500 2),           :dx -1
+            :y (/ 300 2),           :dy -1}})
 
 (defn setup
   "Setup for Quil"
