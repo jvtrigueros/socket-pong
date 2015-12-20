@@ -9,7 +9,7 @@
 (def ^:private BALL_SIZE 15)
 
 (def initial-state
-  {:paddle-position (/ 300 2) #_(/ (- 300 PADDLE_HEIGHT) 2)
+  {:paddle-position (/ 300 2)
    :ball            {:x (/ 500 2), :dx -1
                      :y (/ 300 2), :dy -1}})
 
@@ -47,8 +47,9 @@
   [state]
   (let [ball (:ball state)
         {:keys [x dx y dy]} ball
+        radius (/ BALL_SIZE 2)
         invert-velocity (fn [p v bound]
-                          (if (< 0 p bound)
+                          (if (< 0 (- p radius) (+ p radius) bound)
                             v
                             (* -1 v)))
         x-bounds 500
