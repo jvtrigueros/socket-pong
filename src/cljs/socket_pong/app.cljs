@@ -38,17 +38,36 @@
   (let [ball (:ball state)
         {:keys [x y]} ball]
     (q/fill 240)
-    (q/rect x y
-            BALL_SIZE BALL_SIZE)
+    (q/ellipse x y
+               BALL_SIZE BALL_SIZE)
     state))
 
-(defn set-ball-position!
+(defn compute-ball-velocity
+  "Determine the velocity of the ball."
+  [state]
+  (let [ball (:ball state)
+        {:keys [x dx y dy]} ball
+        invert-velocity (fn [p v bound]
+                          (if (< 0 p bound)
+                            v
+                            (* -1 v)))
+        x-bounds 500
+        y-bounds 300]
+    (update-in state [:ball]
+               assoc
+                 :dx (invert-velocity x dx x-bounds)
+                 :dy (invert-velocity y dy y-bounds))))
+
+(defn compute-ball-position
   "Determine the position of the ball."
   [state]
   (let [ball (:ball state)
-        {:keys [dx y dy]} ball
-        new-state (update-in state [:ball :x] + (* 10 dx))]
-    (update-in state [:ball :x] + dx)))
+        {:keys [x dx y dy]} ball]
+
+    (update-in state [:ball]
+               assoc
+                :x (+ x dx)
+                :y (+ y dy))))
 
 (defn draw-state
   "Draws the current state of the application"
@@ -61,7 +80,8 @@
   "Updates the state of the application"
   [state]
   (-> state
-      (set-ball-position!)))
+      (compute-ball-velocity)
+      (compute-ball-position)))
 
 (defn set-paddle-position!
   "Set the paddle position based on which key was pressed."
