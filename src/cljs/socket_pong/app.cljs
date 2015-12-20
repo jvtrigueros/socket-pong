@@ -2,14 +2,14 @@
   (:require [quil.core :as q :include-macros true]
             [quil.middleware :as m]))
 
-(def ^:private PADDLE_WIDTH 5)
-(def ^:private PADDLE_HEIGHT 40)
-(def ^:private PADDLE_OFFSET 5)
+(def ^:private PADDLE_WIDTH 10)
+(def ^:private PADDLE_HEIGHT 80)
+(def ^:private PADDLE_OFFSET 10)
 
-(def ^:private BALL_SIZE 10)
+(def ^:private BALL_SIZE 15)
 
 (def initial-state
-  {:paddle-position (/ (- 300 PADDLE_HEIGHT) 2)
+  {:paddle-position (/ 300 2) #_(/ (- 300 PADDLE_HEIGHT) 2)
    :ball            {:x (/ 500 2), :dx -1
                      :y (/ 300 2), :dy -1}})
 
@@ -17,7 +17,6 @@
   "Setup for Quil"
   []
   (q/color-mode :hsb)
-  (q/background 0)
   (q/frame-rate 60)
 
   initial-state)
@@ -73,6 +72,8 @@
 (defn draw-state
   "Draws the current state of the application"
   [state]
+  (q/background 0)
+
   (-> state
       (draw-paddle)
       (draw-ball)))
