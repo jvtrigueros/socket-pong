@@ -26,6 +26,7 @@
   "Draw paddle"
   [state]
   (q/fill 255)
+  (q/rect-mode :center)
   (q/rect PADDLE_OFFSET
           (:paddle-position state)
           PADDLE_WIDTH
