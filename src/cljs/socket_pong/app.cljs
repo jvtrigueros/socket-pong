@@ -9,8 +9,8 @@
 (def ^:private BALL_SIZE 15)
 
 (def initial-state
-  {:paddle-position (/ 300 2)
-   :ball            {:x (/ 500 2), :dx -1
+  {:paddle (/ 300 2)
+   :ball   {:x (/ 500 2), :dx -1
                      :y (/ 300 2), :dy -1}})
 
 (defn setup
@@ -27,7 +27,7 @@
   (q/fill 255)
   (q/rect-mode :center)
   (q/rect PADDLE_OFFSET
-          (:paddle-position state)
+          (:paddle state)
           PADDLE_WIDTH
           PADDLE_HEIGHT)
   state)
@@ -89,12 +89,12 @@
 (defn set-paddle-position!
   "Set the paddle position based on which key was pressed."
   [state key]
-  (let [old-position (:paddle-position state)
+  (let [old-position (:paddle state)
         new-position (case key
                        :up (dec old-position)
                        :down (inc old-position)
                        old-position)]
-    (update-in state [:paddle-position] (constantly new-position))))
+    (update-in state [:paddle] (constantly new-position))))
 
 (defn key-pressed-handler
   "Determine what to do when key is pressed."
