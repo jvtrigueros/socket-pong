@@ -26,13 +26,11 @@
 (defn draw-paddle
   "Draw paddle"
   [state]
-  (q/fill 255)
-  (q/rect-mode :center)
-  (q/rect PADDLE_OFFSET
-          (:paddle state)
-          PADDLE_WIDTH
-          PADDLE_HEIGHT)
-  state)
+  (let [paddle (:paddle state)
+        {:keys [x y height width]} paddle]
+    (q/fill 255)
+    (q/rect-mode :center)
+    (q/rect x y width height)))
 
 (defn draw-ball
   "Draw ball."
@@ -54,8 +52,8 @@
                           (if (< 0 (- p radius) (+ p radius) bound)
                             v
                             (* -1 v)))
-        x-bounds 500
-        y-bounds 300]
+        x-bounds (q/width)
+        y-bounds (q/height)]
     (update-in state [:ball]
                assoc
                  :dx (invert-velocity x dx x-bounds)
@@ -72,12 +70,18 @@
                 :x (+ x dx)
                 :y (+ y dy))))
 
+(defn compute-paddle-position
+  [state]
+  (let [paddle (:paddle state)
+        {:keys [y dy]} paddle]
+    (assoc-in state [:paddle :y] (+ y dy))))
+
 (defn draw-state
   "Draws the current state of the application"
   [state]
   (q/background 0)
 
-  (-> state
+  (doto state
       (draw-paddle)
       (draw-ball)))
 
@@ -86,23 +90,27 @@
   [state]
   (-> state
       (compute-ball-velocity)
-      (compute-ball-position)))
+      (compute-ball-position)
+      (compute-paddle-position)))
 
-(defn set-paddle-position!
+(defn set-paddle-velocity
   "Set the paddle position based on which key was pressed."
   [state key]
-  (let [old-position (:paddle state)
-        new-position (case key
-                       :up (dec old-position)
-                       :down (inc old-position)
-                       old-position)]
-    (update-in state [:paddle] (constantly new-position))))
+  (let [dy (get-in state [:paddle :dy])]
+    (assoc-in state [:paddle :dy] (case key
+                                    :up -1
+                                    :down 1
+                                    dy))))
 
 (defn key-pressed-handler
   "Determine what to do when key is pressed."
   [state event]
   (-> state
-      (set-paddle-position! (:key event))))
+      (set-paddle-velocity (:key event))))
+
+(defn key-release-handler
+  [state]
+  (assoc-in state [:paddle :dy] 0))
 
 (defn reset
   "Reset state of program."
@@ -115,6 +123,7 @@
              :draw draw-state
              :update update-state
              :key-pressed key-pressed-handler
+             :key-released key-release-handler
              :key-typed reset
              :middleware [m/fun-mode])
 
