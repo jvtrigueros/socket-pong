@@ -99,12 +99,18 @@
   (-> state
       (set-paddle-position! (:key event))))
 
+(defn reset
+  "Reset state of program."
+  [state event]
+  initial-state)
+
 (q/defsketch socket-pong
              :host "socket-pong"
              :setup setup
              :draw draw-state
              :update update-state
              :key-pressed key-pressed-handler
+             :key-typed reset
              :middleware [m/fun-mode])
 
 (.log js/console "Socket Pong!")
