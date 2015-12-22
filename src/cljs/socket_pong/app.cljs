@@ -9,7 +9,8 @@
 (def ^:private BALL_SIZE 15)
 
 (def initial-state
-  {:paddle {:x PADDLE_OFFSET,       :dx 0
+  {:winner nil
+   :paddle {:x PADDLE_OFFSET,       :dx 0
             :y (/ 300 2),           :dy 0
             :height PADDLE_HEIGHT,  :width PADDLE_WIDTH}
    :ball   {:x (/ 500 2),           :dx -5
@@ -47,16 +48,14 @@
   "Determine the velocity of the ball."
   [state]
   (let [ball (:ball state)
-        {:keys [x dx y dy radius]} ball
+        {:keys [y dy radius]} ball
         invert-velocity (fn [p v bound]
                           (if (< 0 (- p radius) (+ p radius) bound)
                             v
                             (* -1 v)))
-        x-bounds (q/width)
         y-bounds (q/height)]
     (update-in state [:ball]
                assoc
-                 :dx (invert-velocity x dx x-bounds)
                  :dy (invert-velocity y dy y-bounds))))
 
 (defn compute-ball-position
