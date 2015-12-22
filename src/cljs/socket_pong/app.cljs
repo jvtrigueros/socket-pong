@@ -89,6 +89,14 @@
                 (* -1 bdx)
                 bdx))))
 
+(defn check-winner
+  "Determines if there's a winner."
+  [state]
+  (let [{:keys [x]} (:ball state)]
+    (if (< 0 x (q/width))
+      state
+      (assoc state :winner :paddle))))
+
 (defn draw-state
   "Draws the current state of the application"
   [state]
@@ -101,11 +109,14 @@
 (defn update-state
   "Updates the state of the application"
   [state]
-  (-> state
-      (compute-ball-velocity)
-      (compute-ball-position)
-      (compute-paddle-position)
-      (compute-paddle-collision)))
+  (if-not (:winner (check-winner state))
+    (-> state
+        (compute-ball-velocity)
+        (compute-ball-position)
+        (compute-paddle-position)
+        (compute-paddle-collision)
+        (check-winner))
+    state))
 
 (defn set-paddle-velocity
   "Set the paddle position based on which key was pressed."
