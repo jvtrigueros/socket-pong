@@ -76,6 +76,20 @@
         {:keys [y dy]} paddle]
     (assoc-in state [:paddle :y] (+ y dy))))
 
+(defn compute-paddle-collision
+  "Change the ball's velocity based on paddle collision"
+  [state]
+  (let [ball (:ball state)
+        paddle (:paddle state)
+        {bx :x bdx :dx by :y r :radius} ball
+        {px :x py :y h :height w :width} paddle]
+
+    (assoc-in state [:ball :dx]
+              (if (and (< (- bx r) (+ px (/ w 2)))                          ; Check for x-collision
+                       (< (- py (/ h 2)) (- by r) (+ by r) (+ py (/ h 2)))) ; Check for y-collision
+                (* -1 bdx)
+                bdx))))
+
 (defn draw-state
   "Draws the current state of the application"
   [state]
@@ -91,7 +105,8 @@
   (-> state
       (compute-ball-velocity)
       (compute-ball-position)
-      (compute-paddle-position)))
+      (compute-paddle-position)
+      (compute-paddle-collision)))
 
 (defn set-paddle-velocity
   "Set the paddle position based on which key was pressed."
