@@ -84,8 +84,8 @@
         {px :x py :y h :height w :width} paddle]
 
     (assoc-in state [:ball :dx]
-              (if (and (< (- bx r) (+ px (/ w 2)))                          ; Check for x-collision
-                       (< (- py (/ h 2)) (- by r) (+ by r) (+ py (/ h 2)))) ; Check for y-collision
+              (if (and (< (- (+ px (/ w 2)) (Math/abs bdx)) (- bx r) (+ px (/ w 2))) ; Check for x-collision
+                       (< (- py (/ h 2)) (- by r) (+ by r) (+ py (/ h 2))))          ; Check for y-collision
                 (* -1 bdx)
                 bdx))))
 
