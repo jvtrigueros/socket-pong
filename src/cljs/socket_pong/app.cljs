@@ -12,8 +12,9 @@
   {:paddle {:x PADDLE_OFFSET,       :dx 0
             :y (/ 300 2),           :dy 0
             :height PADDLE_HEIGHT,  :width PADDLE_WIDTH}
-   :ball   {:x (/ 500 2),           :dx -1
-            :y (/ 300 2),           :dy -1}})
+   :ball   {:x (/ 500 2),           :dx -5
+            :y (/ 300 2),           :dy -5
+            :radius (/ BALL_SIZE 2)}})
 
 (defn setup
   "Setup for Quil"
@@ -46,8 +47,7 @@
   "Determine the velocity of the ball."
   [state]
   (let [ball (:ball state)
-        {:keys [x dx y dy]} ball
-        radius (/ BALL_SIZE 2)
+        {:keys [x dx y dy radius]} ball
         invert-velocity (fn [p v bound]
                           (if (< 0 (- p radius) (+ p radius) bound)
                             v
@@ -98,8 +98,8 @@
   [state key]
   (let [dy (get-in state [:paddle :dy])]
     (assoc-in state [:paddle :dy] (case key
-                                    :up -1
-                                    :down 1
+                                    :up -10
+                                    :down 10
                                     dy))))
 
 (defn key-pressed-handler
