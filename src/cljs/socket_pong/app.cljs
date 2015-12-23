@@ -16,6 +16,8 @@
              :y      0, :dy -5
              :radius 0}})
 
+(defn player-paddle [state] (get-in state [:paddles 0]))
+
 (defn set-initial-state
   "Given a state schema, fill it in with appropriate default values."
   [schema height width]
@@ -81,7 +83,7 @@
 
 (defn compute-paddle-position
   [state]
-  (let [player (get-in state [:paddles 0])
+  (let [player (player-paddle state)
         {:keys [y dy]} player]
     (assoc-in state [:paddles 0 :y] (+ y dy))))
 
@@ -89,7 +91,7 @@
   "Change the ball's velocity based on paddle collision"
   [state]
   (let [ball (:ball state)
-        paddle (:paddle state)
+        paddle (player-paddle state)
         {bx :x bdx :dx by :y r :radius} ball
         {px :x py :y h :height w :width} paddle]
 
@@ -124,14 +126,14 @@
         (compute-ball-velocity)
         (compute-ball-position)
         (compute-paddle-position)
-        ;(compute-paddle-collision)
+        (compute-paddle-collision)
         (check-winner))
     state))
 
 (defn set-paddle-velocity
   "Set the paddle position based on which key was pressed."
   [state key]
-  (let [dy (get-in state [:paddles 0 :dy])]
+  (let [dy (:dy (player-paddle state))]
     (assoc-in state [:paddles 0 :dy] (case key
                                        :up -10
                                        :down 10
