@@ -81,9 +81,9 @@
 
 (defn compute-paddle-position
   [state]
-  (let [paddle (:paddle state)
-        {:keys [y dy]} paddle]
-    (assoc-in state [:paddle :y] (+ y dy))))
+  (let [player (get-in state [:paddles 0])
+        {:keys [y dy]} player]
+    (assoc-in state [:paddles 0 :y] (+ y dy))))
 
 (defn compute-paddle-collision
   "Change the ball's velocity based on paddle collision"
@@ -123,7 +123,7 @@
     (-> state
         (compute-ball-velocity)
         (compute-ball-position)
-        ;(compute-paddle-position)
+        (compute-paddle-position)
         ;(compute-paddle-collision)
         (check-winner))
     state))
@@ -131,11 +131,11 @@
 (defn set-paddle-velocity
   "Set the paddle position based on which key was pressed."
   [state key]
-  (let [dy (get-in state [:paddle :dy])]
-    (assoc-in state [:paddle :dy] (case key
-                                    :up -10
-                                    :down 10
-                                    dy))))
+  (let [dy (get-in state [:paddles 0 :dy])]
+    (assoc-in state [:paddles 0 :dy] (case key
+                                       :up -10
+                                       :down 10
+                                       dy))))
 
 (defn key-pressed-handler
   "Determine what to do when key is pressed."
@@ -145,7 +145,7 @@
 
 (defn key-release-handler
   [state]
-  (assoc-in state [:paddle :dy] 0))
+  (assoc-in state [:paddles 0 :dy] 0))
 
 (defn reset
   "Reset state of program."
