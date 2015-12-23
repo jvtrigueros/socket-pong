@@ -2,20 +2,31 @@
   (:require [quil.core :as q :include-macros true]
             [quil.middleware :as m]))
 
-(def ^:private PADDLE_WIDTH 10)
-(def ^:private PADDLE_HEIGHT 80)
-(def ^:private PADDLE_OFFSET 10)
+(def state-schema
+  {:winner  nil
+   :paddles [{:id     :player
+              :x      0, :dx 0
+              :y      0, :dy 0
+              :height 0, :width 0}
+             {:id     :enemy
+              :x      0, :dx 0
+              :y      0, :dy 0
+              :height 0, :width 0}]
+   :ball    {:x      0, :dx -5
+             :y      0, :dy -5
+             :radius 0}})
 
-(def ^:private BALL_SIZE 15)
-
-(def initial-state
-  {:winner nil
-   :paddle {:x PADDLE_OFFSET,       :dx 0
-            :y (/ 300 2),           :dy 0
-            :height PADDLE_HEIGHT,  :width PADDLE_WIDTH}
-   :ball   {:x (/ 500 2),           :dx -5
-            :y (/ 300 2),           :dy -5
-            :radius (/ BALL_SIZE 2)}})
+(defn set-initial-state
+  "Given a state schema, fill it in with appropriate default values."
+  [schema height width]
+  (let [paddle-offset 10
+        paddle-width 10
+        paddle-height 80
+        ball-radius 7]
+    (-> schema
+        (update-in [:paddles 0] assoc :x paddle-offset :y (/ height 2) :height paddle-height :width paddle-width)
+        (update-in [:paddles 1] assoc :x (- width paddle-offset) :y (/ height 2) :height paddle-height :width paddle-width)
+        (update-in [:ball] assoc :x (/ width 2) :y (/ height 2) :radius ball-radius))))
 
 (defn setup
   "Setup for Quil"
@@ -23,26 +34,25 @@
   (q/color-mode :hsb)
   (q/frame-rate 60)
 
-  initial-state)
+  (set-initial-state state-schema (q/height) (q/width)))
 
 (defn draw-paddle
   "Draw paddle"
   [state]
-  (let [paddle (:paddle state)
-        {:keys [x y height width]} paddle]
-    (q/fill 255)
-    (q/rect-mode :center)
+  (q/fill 255)
+  (q/rect-mode :center)
+  (doseq [paddle (:paddles state)
+          :let [{:keys [x y height width]} paddle]]
     (q/rect x y width height)))
 
 (defn draw-ball
   "Draw ball."
   [state]
   (let [ball (:ball state)
-        {:keys [x y]} ball]
+        {:keys [x y radius]} ball]
     (q/fill 240)
-    (q/ellipse x y
-               BALL_SIZE BALL_SIZE)
-    state))
+    (q/ellipse-mode :radius)
+    (q/ellipse x y radius radius)))
 
 (defn compute-ball-velocity
   "Determine the velocity of the ball."
@@ -113,8 +123,8 @@
     (-> state
         (compute-ball-velocity)
         (compute-ball-position)
-        (compute-paddle-position)
-        (compute-paddle-collision)
+        ;(compute-paddle-position)
+        ;(compute-paddle-collision)
         (check-winner))
     state))
 
@@ -139,8 +149,10 @@
 
 (defn reset
   "Reset state of program."
-  [state event]
-  initial-state)
+  [_ _]
+  (-> state-schema
+      (set-initial-state (q/height) (q/width))
+      (assoc :winner nil)))
 
 (q/defsketch socket-pong
              :host "socket-pong"
