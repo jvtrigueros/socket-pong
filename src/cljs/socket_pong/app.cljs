@@ -16,7 +16,7 @@
              :y      0, :dy -5
              :radius 0}})
 
-(defn player-paddle [state] (get-in state [:paddles 0]))
+(defn paddle [state id] (first (filter #(= id (:id %)) (:paddles state))))
 
 (defn set-initial-state
   "Given a state schema, fill it in with appropriate default values."
@@ -26,7 +26,7 @@
         paddle-height 80
         ball-radius 7]
     (-> schema
-        (update-in [:paddles 0] assoc :x paddle-offset :y (/ height 2) :height paddle-height :width paddle-width)
+        (update-in [:paddles 0] assoc :x paddle-offset :y (- (/ height 2) 40) :height paddle-height :width paddle-width)
         (update-in [:paddles 1] assoc :x (- width paddle-offset) :y (/ height 2) :height paddle-height :width paddle-width)
         (update-in [:ball] assoc :x (/ width 2) :y (/ height 2) :radius ball-radius))))
 
@@ -83,7 +83,7 @@
 
 (defn compute-paddle-position
   [state]
-  (let [player (player-paddle state)
+  (let [player (paddle state :player)
         {:keys [y dy]} player]
     (assoc-in state [:paddles 0 :y] (+ y dy))))
 
@@ -91,10 +91,10 @@
   "Change the ball's velocity based on paddle collision"
   [state]
   (let [ball (:ball state)
-        paddle (player-paddle state)
+        paddle (paddle state :player)
         {bx :x bdx :dx by :y r :radius} ball
         {px :x py :y h :height w :width} paddle]
-
+    (.log js/console (str paddle))
     (assoc-in state [:ball :dx]
               (if (and (< (- (+ px (/ w 2)) (Math/abs bdx)) (- bx r) (+ px (/ w 2))) ; Check for x-collision
                        (< (- py (/ h 2)) (- by r) (+ by r) (+ py (/ h 2))))          ; Check for y-collision
@@ -125,15 +125,14 @@
     (-> state
         (compute-ball-velocity)
         (compute-ball-position)
-        (compute-paddle-position)
-        (compute-paddle-collision)
-        (check-winner))
+        ;(compute-paddle-position)
+        (compute-paddle-collision))
     state))
 
 (defn set-paddle-velocity
   "Set the paddle position based on which key was pressed."
   [state key]
-  (let [dy (:dy (player-paddle state))]
+  (let [dy (:dy (paddle state :player))]
     (assoc-in state [:paddles 0 :dy] (case key
                                        :up -10
                                        :down 10
