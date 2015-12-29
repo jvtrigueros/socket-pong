@@ -82,16 +82,17 @@
                 :y (+ y dy))))
 
 (defn compute-paddle-position
-  [state]
-  (let [player (paddle state :player)
+  [state paddle-id]
+  (let [player (paddle state paddle-id)
         {:keys [y dy]} player]
+    ; TODO: I can't do this, cause this wont really work.
     (assoc-in state [:paddles 0 :y] (+ y dy))))
 
 (defn compute-paddle-collision
   "Change the ball's velocity based on paddle collision"
-  [state]
+  [state paddle-id]
   (let [ball (:ball state)
-        paddle (paddle state :player)
+        paddle (paddle state paddle-id)
         {bx :x bdx :dx by :y r :radius} ball
         {px :x py :y h :height w :width} paddle]
     (.log js/console (str paddle))
@@ -125,8 +126,9 @@
     (-> state
         (compute-ball-velocity)
         (compute-ball-position)
-        ;(compute-paddle-position)
-        (compute-paddle-collision))
+        (compute-paddle-position :player)
+        (compute-paddle-collision :player)
+        (compute-paddle-collision :enemy))
     state))
 
 (defn set-paddle-velocity
