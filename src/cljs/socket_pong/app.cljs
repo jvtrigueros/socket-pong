@@ -2,20 +2,33 @@
   (:require [quil.core :as q :include-macros true]
             [quil.middleware :as m]))
 
-(def ^:private PADDLE_WIDTH 10)
-(def ^:private PADDLE_HEIGHT 80)
-(def ^:private PADDLE_OFFSET 10)
+(def state-schema
+  {:winner  nil
+   :paddles [{:id     :player
+              :x      0, :dx 0
+              :y      0, :dy 0
+              :height 0, :width 0}
+             {:id     :enemy
+              :x      0, :dx 0
+              :y      0, :dy 0
+              :height 0, :width 0}]
+   :ball    {:x      0, :dx -5
+             :y      0, :dy -5
+             :radius 0}})
 
-(def ^:private BALL_SIZE 15)
+(defn paddle [state id] (first (filter #(= id (:id %)) (:paddles state))))
 
-(def initial-state
-  {:winner nil
-   :paddle {:x PADDLE_OFFSET,       :dx 0
-            :y (/ 300 2),           :dy 0
-            :height PADDLE_HEIGHT,  :width PADDLE_WIDTH}
-   :ball   {:x (/ 500 2),           :dx -5
-            :y (/ 300 2),           :dy -5
-            :radius (/ BALL_SIZE 2)}})
+(defn set-initial-state
+  "Given a state schema, fill it in with appropriate default values."
+  [schema height width]
+  (let [paddle-offset 10
+        paddle-width 10
+        paddle-height 80
+        ball-radius 7]
+    (-> schema
+        (update-in [:paddles 0] assoc :x paddle-offset :y (- (/ height 2) 40) :height paddle-height :width paddle-width)
+        (update-in [:paddles 1] assoc :x (- width paddle-offset) :y (/ height 2) :height paddle-height :width paddle-width)
+        (update-in [:ball] assoc :x (/ width 2) :y (/ height 2) :radius ball-radius))))
 
 (defn setup
   "Setup for Quil"
@@ -23,26 +36,25 @@
   (q/color-mode :hsb)
   (q/frame-rate 60)
 
-  initial-state)
+  (set-initial-state state-schema (q/height) (q/width)))
 
 (defn draw-paddle
   "Draw paddle"
   [state]
-  (let [paddle (:paddle state)
-        {:keys [x y height width]} paddle]
-    (q/fill 255)
-    (q/rect-mode :center)
+  (q/fill 255)
+  (q/rect-mode :center)
+  (doseq [paddle (:paddles state)
+          :let [{:keys [x y height width]} paddle]]
     (q/rect x y width height)))
 
 (defn draw-ball
   "Draw ball."
   [state]
   (let [ball (:ball state)
-        {:keys [x y]} ball]
+        {:keys [x y radius]} ball]
     (q/fill 240)
-    (q/ellipse x y
-               BALL_SIZE BALL_SIZE)
-    state))
+    (q/ellipse-mode :radius)
+    (q/ellipse x y radius radius)))
 
 (defn compute-ball-velocity
   "Determine the velocity of the ball."
@@ -70,22 +82,35 @@
                 :y (+ y dy))))
 
 (defn compute-paddle-position
-  [state]
-  (let [paddle (:paddle state)
-        {:keys [y dy]} paddle]
-    (assoc-in state [:paddle :y] (+ y dy))))
+  [state paddle-id]
+  (let [player (paddle state paddle-id)
+        {:keys [y dy]} player]
+    ; TODO: I can't do this, cause this wont really work.
+    (assoc-in state [:paddles 0 :y] (+ y dy))))
 
 (defn compute-paddle-collision
   "Change the ball's velocity based on paddle collision"
-  [state]
+  [state paddle-id]
   (let [ball (:ball state)
-        paddle (:paddle state)
+        paddle (paddle state paddle-id)
         {bx :x bdx :dx by :y r :radius} ball
-        {px :x py :y h :height w :width} paddle]
+        {px :x py :y ph :height pw :width} paddle
+        paddle-right-edge (+ px (/ pw 2))
+        paddle-left-edge (- px (/ pw 2))
+        paddle-top-edge (- py (/ ph 2))
+        paddle-bottom-edge (+ py (/ ph 2))
+        ball-left-edge (- bx r)
+        ball-right-edge (+ bx r)
+        ball-top-edge (- by r)
+        ball-bottom-edge (+ by r)]
 
+    (.log js/console (str paddle))
     (assoc-in state [:ball :dx]
-              (if (and (< (- (+ px (/ w 2)) (Math/abs bdx)) (- bx r) (+ px (/ w 2))) ; Check for x-collision
-                       (< (- py (/ h 2)) (- by r) (+ by r) (+ py (/ h 2))))          ; Check for y-collision
+              (if (and
+                    (< paddle-top-edge ball-top-edge ball-bottom-edge paddle-bottom-edge)
+                    (or
+                      (< paddle-left-edge ball-right-edge (+ paddle-left-edge (Math/abs bdx)))
+                      (< (- paddle-right-edge (Math/abs bdx)) ball-left-edge paddle-right-edge)))
                 (* -1 bdx)
                 bdx))))
 
@@ -113,19 +138,19 @@
     (-> state
         (compute-ball-velocity)
         (compute-ball-position)
-        (compute-paddle-position)
-        (compute-paddle-collision)
-        (check-winner))
+        (compute-paddle-position :player)
+        (compute-paddle-collision :player)
+        (compute-paddle-collision :enemy))
     state))
 
 (defn set-paddle-velocity
   "Set the paddle position based on which key was pressed."
   [state key]
-  (let [dy (get-in state [:paddle :dy])]
-    (assoc-in state [:paddle :dy] (case key
-                                    :up -10
-                                    :down 10
-                                    dy))))
+  (let [dy (:dy (paddle state :player))]
+    (assoc-in state [:paddles 0 :dy] (case key
+                                       :up -10
+                                       :down 10
+                                       dy))))
 
 (defn key-pressed-handler
   "Determine what to do when key is pressed."
@@ -135,12 +160,14 @@
 
 (defn key-release-handler
   [state]
-  (assoc-in state [:paddle :dy] 0))
+  (assoc-in state [:paddles 0 :dy] 0))
 
 (defn reset
   "Reset state of program."
-  [state event]
-  initial-state)
+  [_ _]
+  (-> state-schema
+      (set-initial-state (q/height) (q/width))
+      (assoc :winner nil)))
 
 (q/defsketch socket-pong
              :host "socket-pong"
