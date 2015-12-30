@@ -81,12 +81,17 @@
                 :x (+ x dx)
                 :y (+ y dy))))
 
-(defn compute-paddle-position
-  [state paddle-id]
-  (let [player (paddle state paddle-id)
+(defn compute-player-position
+  [state]
+  (let [player (paddle state :player)
         {:keys [y dy]} player]
     ; TODO: I can't do this, cause this wont really work.
     (assoc-in state [:paddles 0 :y] (+ y dy))))
+
+(defn compute-enemy-position
+  [state]
+  (let [{by :y} (:ball state)]
+    (assoc-in state [:paddles 1 :y] by)))
 
 (defn compute-paddle-collision
   "Change the ball's velocity based on paddle collision"
@@ -137,9 +142,10 @@
   (if-not (:winner (check-winner state))
     (-> state
         (compute-ball-velocity)
-        (compute-ball-position)
-        (compute-paddle-position :player)
         (compute-paddle-collision :player)
+        (compute-ball-position)
+        (compute-player-position)
+        (compute-enemy-position)
         (compute-paddle-collision :enemy))
     state))
 
@@ -148,8 +154,8 @@
   [state key]
   (let [dy (:dy (paddle state :player))]
     (assoc-in state [:paddles 0 :dy] (case key
-                                       :up -10
-                                       :down 10
+                                       :up -8
+                                       :down 8
                                        dy))))
 
 (defn key-pressed-handler
