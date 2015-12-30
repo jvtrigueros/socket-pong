@@ -94,11 +94,23 @@
   (let [ball (:ball state)
         paddle (paddle state paddle-id)
         {bx :x bdx :dx by :y r :radius} ball
-        {px :x py :y h :height w :width} paddle]
+        {px :x py :y ph :height pw :width} paddle
+        paddle-right-edge (+ px (/ pw 2))
+        paddle-left-edge (- px (/ pw 2))
+        paddle-top-edge (- py (/ ph 2))
+        paddle-bottom-edge (+ py (/ ph 2))
+        ball-left-edge (- bx r)
+        ball-right-edge (+ bx r)
+        ball-top-edge (- by r)
+        ball-bottom-edge (+ by r)]
+
     (.log js/console (str paddle))
     (assoc-in state [:ball :dx]
-              (if (and (< (- (+ px (/ w 2)) (Math/abs bdx)) (- bx r) (+ px (/ w 2))) ; Check for x-collision
-                       (< (- py (/ h 2)) (- by r) (+ by r) (+ py (/ h 2))))          ; Check for y-collision
+              (if (and
+                    (< paddle-top-edge ball-top-edge ball-bottom-edge paddle-bottom-edge)
+                    (or
+                      (< paddle-left-edge ball-right-edge (+ paddle-left-edge (Math/abs bdx)))
+                      (< (- paddle-right-edge (Math/abs bdx)) ball-left-edge paddle-right-edge)))
                 (* -1 bdx)
                 bdx))))
 
