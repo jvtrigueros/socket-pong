@@ -16,18 +16,9 @@
                                                    1)
                              :y (:y (app/paddle s paddle-id))))
 
-        {px :x py :y ph :height pw :width} (app/paddle state paddle-id)
-        {bx :x by :y bdx :dx r :radius} (:ball state)
-
-        paddle-right-edge (+ px (/ pw 2))
-        paddle-top-edge (- py (/ ph 2))
-        paddle-bottom-edge (+ py (/ ph 2))
-        ball-left-edge (- bx r)
-        ball-top-edge (- by r)
-        ball-bottom-edge (+ by r)]
-    (is (and
-          (< paddle-top-edge ball-top-edge ball-bottom-edge paddle-bottom-edge)
-          (< (- paddle-right-edge (Math/abs bdx)) ball-left-edge paddle-right-edge)))))
+        old-dx (get-in state [:ball :dx])
+        new-dx (get-in (app/compute-paddle-collision state paddle-id) [:ball :dx])]
+    (is (= 0 (+ old-dx new-dx)))))
 
 (deftest test-enemy-paddle-collision
   (let [paddle-id :enemy
@@ -40,17 +31,6 @@
                                                    1)
                              :y (:y (app/paddle s paddle-id))))
 
-        {px :x py :y ph :height pw :width} (app/paddle state paddle-id)
-        {bx :x by :y bdx :dx r :radius} (:ball state)
-
-        paddle-right-edge (+ px (/ pw 2))
-        paddle-left-edge (- px (/ pw 2))
-        paddle-top-edge (- py (/ ph 2))
-        paddle-bottom-edge (+ py (/ ph 2))
-        ball-left-edge (- bx r)
-        ball-right-edge (+ bx r)
-        ball-top-edge (- by r)
-        ball-bottom-edge (+ by r)]
-    (is (and
-          (< paddle-top-edge ball-top-edge ball-bottom-edge paddle-bottom-edge)
-          (< paddle-left-edge ball-right-edge (+ paddle-left-edge (Math/abs bdx)))))))
+        old-dx (get-in state [:ball :dx])
+        new-dx (get-in (app/compute-paddle-collision state paddle-id) [:ball :dx])]
+    (is (= 0 (+ old-dx new-dx)))))
